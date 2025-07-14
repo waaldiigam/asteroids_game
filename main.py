@@ -8,6 +8,7 @@ from asteroid import Asteroid
 from asteroidfield import AsteroidField
 from shot import Shot
 from gamestate import GameState
+from gamestatus import GameStatus
 
 def main():
     pygame.init()
@@ -21,8 +22,11 @@ def main():
     updatable = pygame.sprite.Group()
     drawable = pygame.sprite.Group()
 
+    GameState.containers = (drawable)
+    game_state =  GameState(dt)
+
     Player.containers = (updatable, drawable)
-    player = Player(SCREEN_WIDTH/2, SCREEN_HEIGHT/2)
+    player = Player(SCREEN_WIDTH/2, SCREEN_HEIGHT/2, game_state)
 
     asteroids = pygame.sprite.Group()
 
@@ -33,29 +37,62 @@ def main():
 
     Shot.containers = (shoots, drawable, updatable)
     
-    AsteroidField()   
+    a_field = AsteroidField()
 
-    GameState.containers = (drawable)
-    game_state =  GameState()
+    def kill_all(objects):
+        for object in objects:
+            object.kill()
+    
 
     #game loop
     while True:
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
-                return        
+                return
+            if event.type == pygame.KEYDOWN and event.key == pygame.K_RETURN and game_state.game_status is GameStatus.START:
+                print("Game Start!")
+                kill_all(asteroids)
+                game_state.game_status = GameStatus.PLAYING                
+            if event.type == pygame.KEYDOWN and event.key == pygame.K_RETURN and game_state.game_status is GameStatus.PAUSED:
+                print("Restart")
+                game_state.game_status = GameStatus.PLAYING
+                kill_all(asteroids) 
+            if event.type == pygame.KEYDOWN and event.key == pygame.K_RETURN and game_state.game_status is GameStatus.GAME_OVER:
+                print("Game over")
+                kill_all(asteroids)                
+                game_state.lifes = 3
+                game_state.score = 0
+                game_state.game_hidden_score = 0
+                game_state.game_status = GameStatus.PLAYING
         screen.fill((0, 0, 0))
         for thing in drawable:
-            thing.draw(screen)
-        updatable.update(dt)
-        for asteroid in asteroids:
-            if asteroid.detect_collision(player):
-                print("Game over!")
-                return
-            for bullet in shoots:
-                if bullet.detect_collision(asteroid):
-                    game_state.score += 1
-                    asteroid.split()
-                    bullet.kill()
+            thing.draw(screen, dt)
+        if game_state.game_status in [GameStatus.START, GameStatus.PAUSED]:
+            asteroids.update(dt)           
+            a_field.update(dt)
+        if game_state.game_status is GameStatus.PLAYING:
+            updatable.update(dt)
+            for asteroid in asteroids:
+                if asteroid.detect_collision(player):
+                    player.position = pygame.Vector2(SCREEN_WIDTH/2, SCREEN_HEIGHT/2) 
+                    game_state.lifes -= 1
+                    game_state.game_hidden_score = 0
+                    game_state.game_status = GameStatus.PAUSED
+                    kill_all(asteroids)
+                    kill_all(shoots)                     
+                for bullet in shoots:
+                    if bullet.detect_collision(asteroid):
+                        game_state.score += 1
+                        game_state.game_hidden_score += 1
+                        asteroid.split()
+                        bullet.kill()
+        if game_state.game_hidden_score == 25:
+            game_state.game_hidden_score = 0
+            if game_state.lifes < 3:
+                game_state.lifes += 1
+        if game_state.lifes == 0:
+            print("Game Over!")
+            game_state.game_status = GameStatus.GAME_OVER            
         dt = clock.tick(60) / 1000
         pygame.display.flip()     
         
