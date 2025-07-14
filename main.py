@@ -9,6 +9,7 @@ from asteroidfield import AsteroidField
 from shot import Shot
 from gamestate import GameState
 from gamestatus import GameStatus
+from explosionparticle import ExplosionParticle
 
 def main():
     pygame.init()
@@ -38,6 +39,9 @@ def main():
     Shot.containers = (shoots, drawable, updatable)
     
     a_field = AsteroidField()
+
+    explosions = pygame.sprite.Group()
+    ExplosionParticle.containers = (explosions, updatable, drawable)
 
     def kill_all(objects):
         for object in objects:

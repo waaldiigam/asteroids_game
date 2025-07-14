@@ -1,5 +1,6 @@
 from circleshape import CircleShape
 from constants import ASTEROID_MIN_RADIUS, ASTEROID_MAX_RADIUS, ASTEROID_NEW_SPEED
+from explosionparticle import ExplosionParticle
 import random
 import pygame
 
@@ -17,6 +18,8 @@ class Asteroid(CircleShape):
         self.position += self.velocity * dt
 
     def split(self):
+        for _ in range(15):
+            ExplosionParticle(self.position.x, self.position.y)
         self.kill()
         if self.radius <= ASTEROID_MIN_RADIUS:
             return
@@ -28,3 +31,4 @@ class Asteroid(CircleShape):
         new_asteroid2 = Asteroid(self.position.x, self.position.y, new_radius)
         new_asteroid1.velocity = new_vector1 * ASTEROID_NEW_SPEED
         new_asteroid2.velocity = new_vector2 * ASTEROID_NEW_SPEED
+        
