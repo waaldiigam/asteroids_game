@@ -21,6 +21,7 @@ class Player(CircleShape):
         self.max_boost_energy = PLAYER_MAX_BOOST
         self.boost_drain_rate = PLAYER_BOOST_DRAIN_RATE
         self.boost_recharge_rate = PLAYER_BOOST_RECHARGE_RATE
+        self.weapon_upgrade = 0
 
     def triangle(self):
         forward = pygame.Vector2(0, 1).rotate(self.rotation)
@@ -61,8 +62,18 @@ class Player(CircleShape):
             self.move(-dt)
         if keys[pygame.K_SPACE]:
             if self.timer <= 0:
-                self.timer = PLAYER_SHOOT_COOLDOWN            
-                self.shoot()
+                if self.weapon_upgrade == 0:
+                        self.timer = PLAYER_SHOOT_COOLDOWN                
+                        self.shoot()
+                if self.weapon_upgrade == 1:
+                        self.timer = PLAYER_SHOOT_COOLDOWN /1.3
+                        self.shoot()
+                if self.weapon_upgrade == 2:                    
+                        self.timer = PLAYER_SHOOT_COOLDOWN                
+                        self.double_shoot()
+                if self.weapon_upgrade == 3:
+                        self.timer = PLAYER_SHOOT_COOLDOWN /1.3
+                        self.double_shoot()
 
         self.position += self.velocity * dt
         self.velocity *- 0.95
@@ -75,6 +86,8 @@ class Player(CircleShape):
             self.boost_energy += self.boost_recharge_rate * dt
             if self.boost_energy > self.max_boost_energy:
                 self.boost_energy = self.max_boost_energy
+        
+        super().update(dt)
 
 
     def move(self, dt):        
@@ -94,6 +107,18 @@ class Player(CircleShape):
     def shoot(self):
         bullet = Shot(self.position.x, self.position.y)
         bullet.velocity = pygame.Vector2(0, 1).rotate(self.rotation) * PLAYER_SHOOT_SPEED
+
+    def double_shoot(self):
+        forward = pygame.Vector2(0, 1).rotate(self.rotation)
+        right = pygame.Vector2(1, 0).rotate(self.rotation)
+        offset = 8
+        left_gun_position = self.position - right * offset
+        right_gun_position = self.position + right * offset
+        bullet_left = Shot(left_gun_position.x, left_gun_position.y)
+        bullet_right = Shot(right_gun_position.x, right_gun_position.y)
+        bullet_velocity = forward * PLAYER_SHOOT_SPEED
+        bullet_left.velocity = bullet_velocity
+        bullet_right.velocity = bullet_velocity
 
     def spawn_enginge_particles(self, num_particles):
         back_offset = pygame.Vector2(0, 1).rotate(self.rotation + 180)

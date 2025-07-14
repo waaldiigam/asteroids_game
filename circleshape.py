@@ -1,3 +1,4 @@
+from constants import SCREEN_WIDTH, SCREEN_HEIGHT
 import pygame
 
 # Base class for game objects
@@ -18,8 +19,8 @@ class CircleShape(pygame.sprite.Sprite):
         pass
 
     def update(self, dt):
-        # sub-classes must override
-        pass
+        self.position.x %= SCREEN_WIDTH
+        self.position.y %= SCREEN_HEIGHT
 
     def detect_collision(self, circleShapeObject):
         if self.radius + circleShapeObject.radius > pygame.Vector2.distance_to(self.position, circleShapeObject.position):

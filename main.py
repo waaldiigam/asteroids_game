@@ -19,7 +19,9 @@ def main():
     print(f"Screen width: {SCREEN_WIDTH}")
     print(f"Screen height: {SCREEN_HEIGHT}")
     screen = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT))
-    
+    background = pygame.image.load("img/background.png").convert()
+    background = pygame.transform.scale(background, (SCREEN_WIDTH, SCREEN_HEIGHT))
+
     updatable = pygame.sprite.Group()
     drawable = pygame.sprite.Group()
 
@@ -62,6 +64,7 @@ def main():
                 game_state.game_status = GameStatus.PLAYING
                 kill_all(asteroids)
                 player.velocity = pygame.Vector2(0, 0)
+                player.weapon_upgrade = 0
             if event.type == pygame.KEYDOWN and event.key == pygame.K_RETURN and game_state.game_status is GameStatus.GAME_OVER:
                 print("Game over")
                 kill_all(asteroids)                
@@ -69,8 +72,9 @@ def main():
                 game_state.score = 0
                 game_state.game_hidden_score = 0
                 player.velocity = pygame.Vector2(0, 0)
+                player.weapon_upgrade = 0
                 game_state.game_status = GameStatus.PLAYING
-        screen.fill((0, 0, 0))
+        screen.blit(background, (0, 0))
         for thing in drawable:
             thing.draw(screen, dt)
         if game_state.game_status in [GameStatus.START, GameStatus.PAUSED]:
@@ -93,10 +97,12 @@ def main():
                         game_state.game_hidden_score += 1
                         asteroid.split()
                         bullet.kill()
-        if game_state.game_hidden_score == 25:
+        if game_state.game_hidden_score == 100:
             game_state.game_hidden_score = 0
             if game_state.lifes < 3:
                 game_state.lifes += 1
+            elif player.weapon_upgrade < PLAYER_WEAPON_MAX_UPGRADE:
+                player.weapon_upgrade += 1
         if game_state.lifes == 0:
             print("Game Over!")
             game_state.game_status = GameStatus.GAME_OVER            
