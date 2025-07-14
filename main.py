@@ -60,13 +60,15 @@ def main():
             if event.type == pygame.KEYDOWN and event.key == pygame.K_RETURN and game_state.game_status is GameStatus.PAUSED:
                 print("Restart")
                 game_state.game_status = GameStatus.PLAYING
-                kill_all(asteroids) 
+                kill_all(asteroids)
+                player.velocity = pygame.Vector2(0, 0)
             if event.type == pygame.KEYDOWN and event.key == pygame.K_RETURN and game_state.game_status is GameStatus.GAME_OVER:
                 print("Game over")
                 kill_all(asteroids)                
                 game_state.lifes = 3
                 game_state.score = 0
                 game_state.game_hidden_score = 0
+                player.velocity = pygame.Vector2(0, 0)
                 game_state.game_status = GameStatus.PLAYING
         screen.fill((0, 0, 0))
         for thing in drawable:
@@ -83,7 +85,8 @@ def main():
                     game_state.game_hidden_score = 0
                     game_state.game_status = GameStatus.PAUSED
                     kill_all(asteroids)
-                    kill_all(shoots)                     
+                    kill_all(shoots)
+                    kill_all(explosions)                     
                 for bullet in shoots:
                     if bullet.detect_collision(asteroid):
                         game_state.score += 1
